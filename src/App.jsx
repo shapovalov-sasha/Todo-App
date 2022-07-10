@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import Card from "./components/card/Card";
-import Input from "./components/input/Input";
 import TodoItem from "./components/todo-item/TodoItem";
-import TextArea from "./components/input/TextArea";
 import Button from "./components/button/Button";
+import AddTodoForm from "./components/form/AddTodoForm";
+import EditTodoForm from "./components/form/EditTodoForm";
+import Modal from "./components/modal/Modal";
+
 import "./App.css";
 
 const TODOS_MOCK = [
@@ -35,38 +37,114 @@ const TODOS_MOCK = [
 ];
 
 function App() {
+  const [todos, setTodos] = useState(TODOS_MOCK);
+  const [isOpen, setIsOpen] = useState(false);
+  const [editMode, setEditMode] = useState(null);
+
+  const activeTodos = todos.filter((item) => !item.completed);
+  const completedTodos = todos.filter((item) => item.completed);
+
+  const onModalClose = () => {
+    setIsOpen(false);
+    setEditMode(null);
+  };
+
+  const handleAddTodo = (data) => {
+    const id = Math.random().toString(36).slice(2, 10);
+    setTodos((prevState) => [
+      ...prevState,
+      {
+        ...data,
+        id,
+      },
+    ]);
+    onModalClose();
+  };
+
+  const handleEditTodo = (data) => {
+    setTodos((prevState) =>
+      prevState.map((item) => {
+        if (item.id === data.id) {
+          return data;
+        }
+        return item;
+      })
+    );
+    onModalClose();
+  };
+
+  const handleChekboxClick = (value, id) => {
+    setTodos((prevState) =>
+      prevState.map((item) => {
+        if (item.id === id) {
+          return {
+            ...item,
+            completed: value,
+          };
+        }
+        return item;
+      })
+    );
+  };
+
+  const onDelete = (id) => {
+    setTodos((prevState) => prevState.filter((item) => item.id !== id));
+  };
+
+  const onEdit = (id) => {
+    const todoToEdit = todos.find((item) => item.id === id);
+    setEditMode(todoToEdit);
+    setIsOpen(true);
+  };
+
   return (
     <div className="App">
       <div className="app-container">
         {/* 
             This is your Create Card component.
+            Use this form to create todos
           */}
-        <Card>
-          <h2>Create Todo</h2>
-          <form>
-            <Input onChange={() => {}} placeholder="Title" type="text" />
-            <TextArea onChange={() => {}} placeholder="Description" />
-            <Button type="submit">Create</Button>
-          </form>
-        </Card>
-
+        <Modal isOpen={isOpen} onClose={onModalClose}>
+          {editMode ? (
+            <EditTodoForm
+              initialValues={editMode}
+              onEditSubmit={handleEditTodo}
+            />
+          ) : (
+            <AddTodoForm onAddSubmit={handleAddTodo} />
+          )}
+        </Modal>
         {/* 
           My Todos
         */}
         <Card>
           <h1>My todos</h1>
-          <Button onClick={() => console.log("Open Modal")}>Add +</Button>
+          <Button onClick={() => setIsOpen(true)}>Add +</Button>
           <div className="list-container">
-            <TodoItem completed={false} />
-            <TodoItem completed={false} />
+            {activeTodos.map((item) => (
+              <TodoItem
+                key={item.id}
+                data={item}
+                onCheckboxClick={handleChekboxClick}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
           </div>
 
           <div className="separator"></div>
 
           <h2>Completed</h2>
           <div className="list-container">
-            <TodoItem completed={true} />
-            <TodoItem completed={true} />
+            {completedTodos.map((item) => (
+              <TodoItem
+                key={item.id}
+                data={item}
+                onCheckboxClick={handleChekboxClick}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
           </div>
         </Card>
       </div>
