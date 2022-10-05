@@ -7,57 +7,89 @@ import EditTodoForm from "./components/form/EditTodoForm";
 import Modal from "./components/modal/Modal";
 
 import "./App.css";
+import { useEffect } from "react";
 
-const TODOS_MOCK = [
-  {
-    id: "1",
-    title: "Todo 1",
-    description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. At id illo repellendus non maiores in pariatur aliquam iure fugit amet!",
-    completed: false,
-  },
-  {
-    id: "2",
-    title: "Todo 2",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit!",
-    completed: false,
-  },
-  {
-    id: "3",
-    title: "Todo 3",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit!",
-    completed: true,
-  },
-  {
-    id: "4",
-    title: "Todo 4",
-    description: "Lorem ipsum dolor sit amet consectetur adipisicing elit!",
-    completed: true,
-  },
-];
+const getStoredValuesFromLocalStorage = () => {
+  try {
+    const storedItems = localStorage.getItem("todos");
+
+    return storedItems ? JSON.parse(storedItems) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+/*
+  Todo Examople
+   {
+    id: string, 
+    description: string,
+    completed: bool
+    title: string
+   }
+*/
 
 function App() {
-  const [todos, setTodos] = useState(TODOS_MOCK);
+  const [todos, setTodos] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(null);
 
   const activeTodos = todos.filter((item) => !item.completed);
   const completedTodos = todos.filter((item) => item.completed);
 
+  const getTaskFromApi = async () => {
+    let data = [];
+    try {
+      const response = await fetch("http://localhost:8000/todos", {
+        method: "GET",
+      });
+      if (response.status === 200) data = await response.json();
+    } catch (e) {
+      console.log(e);
+    }
+    setTodos(data);
+  };
+
+  useEffect(() => {
+    getTaskFromApi();
+  }, []);
+
+  useEffect(() => {
+    // const todosToSave = JSON.stringify(todos);
+    // localStorage.setItem("todos", todosToSave);
+  }, [todos]);
+
   const onModalClose = () => {
     setIsOpen(false);
     setEditMode(null);
   };
 
+  const saveTodosWithApi = async (data) => {
+    await fetch("http://localhost:8000/todos", {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+  };
+
   const handleAddTodo = (data) => {
     const id = Math.random().toString(36).slice(2, 10);
-    setTodos((prevState) => [
-      ...prevState,
-      {
-        ...data,
-        id,
-      },
-    ]);
+    console.log({ data });
+    saveTodosWithApi({
+      ...data,
+      id,
+    });
+
+    // setTodos((prevState) => [
+    //   ...prevState,
+    //   {
+    //     ...data,
+    //     id,
+    //   },
+    // ]);
     onModalClose();
   };
 
@@ -88,7 +120,7 @@ function App() {
   };
 
   const onDelete = (id) => {
-    setTodos((prevState) => prevState.filter((item) => item.id !== id));
+    // setTodos((prevState) => prevState.filter((item) => item.id !== id));
   };
 
   const onEdit = (id) => {
@@ -98,8 +130,8 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <div className="app-container">
+    <div className='App'>
+      <div className='app-container'>
         {/* 
             This is your Create Card component.
             Use this form to create todos
@@ -120,7 +152,7 @@ function App() {
         <Card>
           <h1>My todos</h1>
           <Button onClick={() => setIsOpen(true)}>Add +</Button>
-          <div className="list-container">
+          <div className='list-container'>
             {activeTodos.map((item) => (
               <TodoItem
                 key={item.id}
@@ -132,10 +164,10 @@ function App() {
             ))}
           </div>
 
-          <div className="separator"></div>
+          <div className='separator'></div>
 
           <h2>Completed</h2>
-          <div className="list-container">
+          <div className='list-container'>
             {completedTodos.map((item) => (
               <TodoItem
                 key={item.id}

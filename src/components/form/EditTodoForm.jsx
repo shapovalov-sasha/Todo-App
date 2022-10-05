@@ -29,7 +29,7 @@ const EditTodoForm = (props) => {
       return;
     }
     const todoItem = {
-      id: props.initialValues.id,
+      id: formData.id,
       title: formData.title,
       description: formData.description,
       completed: formData.completed,

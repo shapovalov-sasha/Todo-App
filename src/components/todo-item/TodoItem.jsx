@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import "./TodoItem.css";
 import Checkbox from "../checkbox/CheckBox";
 
 const TodoItem = (props) => {
-  const handleCheckboxChange = (value, id) => {
+  const handleCheckboxChange = (value) => {
     /*
       This function is triggered when the checkbox is ticked,
       
@@ -11,7 +11,6 @@ const TodoItem = (props) => {
     if (props.onCheckboxClick) {
       props.onCheckboxClick(value, props.data.id);
     }
-    console.log(value);
   };
 
   const onDelete = () => {
@@ -27,7 +26,10 @@ const TodoItem = (props) => {
   };
 
   return (
-    <div className={`todo-item ${props.data.completed && "todo-completed"}`}>
+    <div
+      onClick={() => console.log(`Click pe cardul ${props.data.title}`)}
+      className={`todo-item ${props.data.completed && "todo-completed"}`}
+    >
       <div className="todo-item-header">
         <div className="title-area">
           <Checkbox
@@ -38,7 +40,7 @@ const TodoItem = (props) => {
           <h4>{props.data.title}</h4>
         </div>
         <div>
-          <i onClick={onEdit} className="fa fa-pencil" aria-hidden="true"></i>
+          <i onClick={onEdit} className="fa fa-pencil" aria-hidden="false"></i>
           <i onClick={onDelete} className="fa fa-trash" aria-hidden="true"></i>
         </div>
       </div>
